@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from src.models import FundingSnapshot, FundingItem
-from src.db import get_all_funding
+from src.db import get_all_funding, get_top_spread
 
 
 async def run_fastapi(
@@ -51,3 +51,8 @@ async def get_funding():
         for row in rows
     ]
     return FundingSnapshot(data=data)
+
+@app.get("/arbitrage")
+async def get_arbitrage():
+    rows = await get_top_spread()
+    return rows

@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import traceback
 
 from datetime import datetime, timezone  
@@ -8,6 +7,9 @@ import ccxt.async_support as ccxt
 
 from src.db import replace_funding_atomically
 from src.config import *
+from src.log_config import configure_logging
+
+logger = configure_logging()
 
 class FundingChecker:
     '''Прямой запрос для бирж, которые предоставляют данные в одном эндпоинте (тикер, фандинг, время начисления)'''
@@ -79,7 +81,7 @@ class FundingChecker:
                     data.append(item)
             return data
         except ccxt.RequestTimeout:
-            logging.warning("Bybit API timeout")
+            logger.error("Bybit API timeout")
         finally:
             await self.ccxt_exchange.close()
 
@@ -91,7 +93,7 @@ class FundingChecker:
                 try:
                     data = await self.fetch_via_http()
                 except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
-                    logging.warning("%s network error: %s", self.exchange_name, e)
+                    logger.error(f"{self.exchange_name} network error: {e}")
                     return  # пропускаем биржу, но не крашим бота
             else:
                 data = await self.fetch_via_ccxt() 
@@ -115,7 +117,11 @@ class FundingChecker:
                     ))
 
                 if new_funding_data:
-                    await replace_funding_atomically(self.exchange_name, new_funding_data)
+                    try:
+                        await replace_funding_atomically(self.exchange_name, new_funding_data)
+                        logger.info(f"Data updated for {self.exchange_name}")
+                    except Exception as e:
+                        logger.error(f"DB error for {self.exchange_name}: {e}")
 
         except Exception as e:
             traceback.print_exc()

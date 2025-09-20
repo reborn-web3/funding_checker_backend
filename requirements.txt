@@ -8,3 +8,5 @@ aiohttp_socks
 fastapi
 uvicorn
 pydantic
+numpy
+loguru
