@@ -221,4 +221,10 @@ async def get_top_spread(limit: int = 5) -> List[Tuple[str, str, str, float, flo
             """,
             (limit,)
         )
-        return await cur.fetchall()
+        rows = await cur.fetchall()
+        result = [
+            (symbol, e1, e2, round(f1, 2), round(f2, 2), round(spread, 2))
+            for symbol, e1, e2, f1, f2, spread in rows
+        ]
+        return result
+

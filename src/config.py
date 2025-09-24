@@ -47,9 +47,9 @@ EXCHANGES = {
 
 
 EXCHANGE_FUTURES_URLS = {
-    "mexc": "https://www.mexc.com/futures/{symbol}",
-    "kucoin": "https://www.kucoin.com/trade/futures/{symbol}",
-    "gate": "https://www.gate.com/futures/USDT/{symbol}",
+    "mexc": "https://www.mexc.com/futures/{symbol}_USDT",
+    "kucoin": "https://www.kucoin.com/trade/futures/{symbol}USDTM",
+    "gate": "https://www.gate.com/futures/USDT/{symbol}_USDT",
     "bybit": "https://www.bybit.com/trade/usdt/{symbol}USDT",
     # "bingx": "https://www.bingx.com/en-us/futures/{symbol}",
 }

@@ -1,4 +1,5 @@
 import asyncio
+import re
 import traceback
 
 from datetime import datetime, timezone  
@@ -104,13 +105,14 @@ class FundingChecker:
                 
                 new_funding_data = []
                 for item in sorted_data:
-                    symbol = item.get("symbol") or item.get("contract") or item.get("name")           
+                    symbol = item.get("symbol") or item.get("contract") or item.get("name")
+                    clean_symbol = re.sub(r'(_USDT|_USDC|USDTM?|USDCM?)', '', symbol)           
                     funding_pct = float(item[self.funding_title]) * 100
                     next_settle = self.format_time(item.get(self.time_title))
                     
                     new_funding_data.append((
                         self.exchange_name, 
-                        symbol, 
+                        clean_symbol, 
                         round(funding_pct, 4), 
                         next_settle.isoformat(),
                         datetime.utcnow()

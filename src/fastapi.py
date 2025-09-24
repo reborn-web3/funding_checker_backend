@@ -44,7 +44,7 @@ async def get_funding():
     data = [
         FundingItem(
             exchange = row[0],
-            symbol = re.sub(r'(_USDT|_USDC|USDTM?|USDCM?)', '', row[1]),
+            symbol = row[1],
             funding = row[2],
             next_settle_utc = row[3]   # уже datetime или str в ISO
         )

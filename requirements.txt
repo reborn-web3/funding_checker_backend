@@ -3,9 +3,9 @@ dotenv
 aiogram
 aiosqlite
 ccxt
-tree_format
 aiohttp_socks 
 fastapi
 uvicorn
 pydantic
 loguru
+protobuf==5.29.5
