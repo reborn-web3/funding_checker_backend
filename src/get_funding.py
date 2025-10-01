@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import aiohttp
 import ccxt.async_support as ccxt
 
-from src.db import replace_funding_atomically
+from src.db.database import db, replace_funding_atomically
 from src.config import *
 from src.log_config import configure_logging
 
@@ -108,14 +108,15 @@ class FundingChecker:
                     symbol = item.get("symbol") or item.get("contract") or item.get("name")
                     clean_symbol = re.sub(r'(_USDT|_USDC|USDTM?|USDCM?)', '', symbol)           
                     funding_pct = float(item[self.funding_title]) * 100
-                    next_settle = self.format_time(item.get(self.time_title))
+                    next_settle = str(self.format_time(item.get(self.time_title)))
+                    updated_at = str(datetime.now(timezone.utc))
                     
                     new_funding_data.append((
                         self.exchange_name, 
                         clean_symbol, 
                         round(funding_pct, 4), 
-                        next_settle.isoformat(),
-                        datetime.utcnow()
+                        next_settle,
+                        updated_at
                     ))
 
                 if new_funding_data:

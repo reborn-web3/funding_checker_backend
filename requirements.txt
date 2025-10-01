@@ -9,3 +9,5 @@ uvicorn
 pydantic
 loguru
 protobuf==5.29.5
+asyncpg
+redis

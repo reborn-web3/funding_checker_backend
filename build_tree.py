@@ -5,7 +5,7 @@ SKIP = {
     'venv', '.venv',
     '__pycache__',
     '.git', '.pytest_cache', '.mypy_cache',
-    'node_modules', 'build_tree.py'
+    'node_modules', 'build_tree.py', 'bot'
 }
 
 def build_tree(path: Path):

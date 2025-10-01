@@ -1,5 +1,7 @@
+from pydantic import BaseModel
 from dataclasses import dataclass
 
+DATABASE_DSN = "postgresql://myuser:mypassword@db:5432/funding"
 
 @dataclass
 class ExchangeConfig:
