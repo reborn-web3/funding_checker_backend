@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
 from src.config import *
-from src.db import get_top_funding_across_exchanges, get_upcoming_funding
+from src.db.database import get_top_funding_across_exchanges, get_upcoming_funding
 
 from bot.db.user_db import Database
 from bot.keyboards.inline import back_to_start_menu_keyboard, select_exchange_keyboard, select_upcoming_funding_time_keyboard

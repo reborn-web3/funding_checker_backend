@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.db import get_funding_for_symbol
+from src.db.database import get_funding_for_symbol
 
 async def build_funding_spread(ticker: str) -> List[Tuple[str, str, float, float]]:
     rows = await get_funding_for_symbol(ticker)  # [(exchange, symbol, funding, next_settle), ...]

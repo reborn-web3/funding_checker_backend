@@ -6,7 +6,7 @@ from bot.text.exchanges_format import format_funding
 from bot.db.user_db import Database
 
 from src.config import *
-from src.db import get_latest_funding
+from src.db.database import get_latest_funding
 
 
 exchanges_router = Router()

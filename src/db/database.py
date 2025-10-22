@@ -1,7 +1,7 @@
 import asyncio
 import asyncpg
 from typing import List, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.config import DATABASE_DSN
 from src.log_config import configure_logging
 
@@ -123,3 +123,108 @@ async def get_top_spread(limit: int = 5):
         LIMIT $1
     """, limit)
     return [(r['symbol'], r['e1'], r['e2'], r['f1'], r['f2'], r['spread']) for r in rows]
+
+# ПЕРЕДЕЛАННЫЕ ФУНКЦИИ ДЛЯ POSTGRESQL
+
+async def get_latest_funding(exchange: str, limit: int = 10):
+    """Получить последние фандинги по бирже"""
+    rows = await db.fetch("""
+        SELECT symbol, funding, next_settle
+        FROM funding
+        WHERE exchange = $1
+        ORDER BY ABS(funding) DESC
+        LIMIT $2
+    """, exchange, limit)
+    return [(r['symbol'], r['funding'], r['next_settle']) for r in rows]
+
+async def get_upcoming_funding(hours: int) -> List[Tuple[str, str, float, str]]:
+    """
+    Возвращает UTC-строки next_settle.
+    hours — целое количество часов вперёд.
+    """
+    now_utc = datetime.utcnow()
+    future_utc = now_utc + timedelta(hours=hours)
+    
+    rows = await db.fetch("""
+        SELECT exchange, symbol, funding, next_settle
+        FROM funding
+        WHERE next_settle BETWEEN $1 AND $2
+        ORDER BY next_settle ASC,
+                 ABS(funding) DESC
+        LIMIT 5
+    """, now_utc.isoformat(), future_utc.isoformat())
+    
+    return [(r['exchange'], r['symbol'], r['funding'], r['next_settle']) for r in rows]
+
+async def get_top_funding_across_exchanges(limit: int = 5) -> List[Tuple[str, str, float, str]]:
+    """
+    Получает топ самых больших фандингов среди всех бирж
+    Возвращает: List[(exchange, symbol, funding, next_settle)]
+    """
+    rows = await db.fetch("""
+        SELECT exchange, symbol, funding, next_settle
+        FROM funding
+        ORDER BY ABS(funding) DESC
+        LIMIT $1
+    """, limit)
+    
+    return [(r['exchange'], r['symbol'], r['funding'], r['next_settle']) for r in rows]
+
+async def get_funding_for_symbol(symbol: str) -> List[Tuple[str, str, float, str]]:
+    """
+    Найдёт записи, где symbol содержит ticker (без учёта регистра).
+    Пример: ticker='CTSI' найдёт CTSIUSDTM, CTSI_USDT и т.д.
+    """
+    pattern = f"%{symbol}%"
+    rows = await db.fetch("""
+        SELECT exchange, symbol, funding, next_settle
+        FROM funding
+        WHERE symbol ILIKE $1
+    """, pattern)
+    
+    return [(r['exchange'], r['symbol'], r['funding'], r['next_settle']) for r in rows]
+
+# ДОПОЛНИТЕЛЬНЫЕ ПОЛЕЗНЫЕ ФУНКЦИИ
+
+async def get_exchanges_list() -> List[str]:
+    """Получить список всех бирж в базе"""
+    rows = await db.fetch("""
+        SELECT DISTINCT exchange 
+        FROM funding 
+        ORDER BY exchange
+    """)
+    return [r['exchange'] for r in rows]
+
+async def get_symbols_list() -> List[str]:
+    """Получить список всех символов в базе"""
+    rows = await db.fetch("""
+        SELECT DISTINCT symbol 
+        FROM funding 
+        ORDER BY symbol
+    """)
+    return [r['symbol'] for r in rows]
+
+async def get_funding_stats() -> dict:
+    """Получить статистику по базе"""
+    rows = await db.fetch("""
+        SELECT 
+            COUNT(*) as total_records,
+            COUNT(DISTINCT exchange) as exchange_count,
+            COUNT(DISTINCT symbol) as symbol_count,
+            AVG(funding) as avg_funding,
+            MAX(funding) as max_funding,
+            MIN(funding) as min_funding
+        FROM funding
+    """)
+    
+    if rows:
+        row = rows[0]
+        return {
+            'total_records': row['total_records'],
+            'exchange_count': row['exchange_count'],
+            'symbol_count': row['symbol_count'],
+            'avg_funding': round(row['avg_funding'], 4),
+            'max_funding': round(row['max_funding'], 4),
+            'min_funding': round(row['min_funding'], 4)
+        }
+    return {}

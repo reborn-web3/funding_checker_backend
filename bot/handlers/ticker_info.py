@@ -5,7 +5,7 @@ from bot.utils.time import localize_time
 from bot.db.user_db import Database
 from bot.text.ticker_info_format import handle_ticker_info_formating
 
-from src.db import get_funding_for_symbol
+from src.db.database import get_funding_for_symbol
 
 
 ticker_information = Router()

@@ -1,17 +1,27 @@
-import redis.asyncio as redis
+# test_connection.py
 import asyncio
+import asyncpg
+DATABASE_DSN = "postgresql://myuser:mypassword@db:5432/funding"
 
+async def test_db():
+    try:
+        # Попробуйте разные варианты DSN
+        dsn_variants = [
+            "postgresql://myuser:mypassword@localhost:5432/funding",
+            "postgresql://myuser:mypassword@db:5432/funding"
+        ]
+        
+        for dsn in dsn_variants:
+            try:
+                print(f"Testing: {dsn}")
+                conn = await asyncpg.connect(dsn)
+                print(f"✅ SUCCESS: {dsn}")
+                await conn.close()
+                return dsn
+            except Exception as e:
+                print(f"❌ FAILED: {dsn} - {e}")
+                
+    except Exception as e:
+        print(f"All connections failed: {e}")
 
-async def main():
-    r = redis.Redis(host="localhost", port=6379, decode_responses=True)
-
-    # Запишем тестовое значение
-    await r.set("foo", "bar")
-
-    # Прочитаем обратно
-    val = await r.get("foo")
-    print("Из Redis получили:", val)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(test_db())

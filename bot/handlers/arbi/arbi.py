@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message
 
-from src.db import get_top_spread, get_funding_for_symbol
+from src.db.database import get_top_spread, get_funding_for_symbol
 
 from bot.handlers.arbi.funding_spread import build_funding_spread
 from bot.utils.time import localize_time
